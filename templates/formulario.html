@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicción Titanic</title>
+
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 500px;
+            margin-top: 50px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #resultado {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+    </style>
+
+    <script>
+        function predecirSupervivencia(event) {
+            event.preventDefault();
+
+            const age = document.getElementById('age').value;
+            const fare = document.getElementById('fare').value;
+            const sex = document.getElementById('sex').value;
+            const pclass = document.getElementById('pclass').value;
+            const embarked = document.getElementById('embarked').value;
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `age=${age}&fare=${fare}&sex=${sex}&pclass=${pclass}&embarked=${embarked}`,
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultado = document.getElementById('resultado');
+                if (data.error) {
+                    resultado.innerText = 'Error: ' + data.error;
+                    resultado.className = "text-danger";
+                } else {
+                    resultado.innerText = data.sobrevive
+                        ? '✅ ¡El pasajero sobreviviría!'
+                        : '❌ El pasajero no sobreviviría.';
+                    resultado.className = data.sobrevive ? "text-success" : "text-danger";
+                }
+            })
+            .catch(error => {
+                document.getElementById('resultado').innerText = 'Error en la solicitud';
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">Predicción de Supervivencia en el Titanic</h2>
+        <form id="formulario" onsubmit="predecirSupervivencia(event)">
+            <div class="mb-3">
+                <label for="age" class="form-label">Edad:</label>
+                <input type="number" step="any" id="age" name="age" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="fare" class="form-label">Tarifa (Fare):</label>
+                <input type="number" step="any" id="fare" name="fare" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="sex" class="form-label">Sexo:</label>
+                <select id="sex" name="sex" class="form-select" required>
+                    <option value="male">Hombre</option>
+                    <option value="female">Mujer</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="pclass" class="form-label">Clase (1, 2, 3):</label>
+                <select id="pclass" name="pclass" class="form-select" required>
+                    <option value="1">Primera</option>
+                    <option value="2">Segunda</option>
+                    <option value="3">Tercera</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="embarked" class="form-label">Puerto de embarque:</label>
+                <select id="embarked" name="embarked" class="form-select" required>
+                    <option value="S">Southampton</option>
+                    <option value="C">Cherbourg</option>
+                    <option value="Q">Queenstown</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Predecir</button>
+        </form>
+        <p id="resultado" class="text-center mt-4"></p>
+    </div>
+</body>
+</html>
